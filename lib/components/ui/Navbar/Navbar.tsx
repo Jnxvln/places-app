@@ -8,7 +8,7 @@ export default function Navbar () {
 
   // Predefined styles
   const defaultLinkStyle = `px-4 py-2 hover:bg-slate-200 transition-colors duration-200 ease-in-out`
-  const activeLinkStyle = `bg-slate-300 font-bold`
+  const activeLinkStyle = `bg-slate-300 text-slate-600 font-bold`
 
   return (
     <nav className="flex">
