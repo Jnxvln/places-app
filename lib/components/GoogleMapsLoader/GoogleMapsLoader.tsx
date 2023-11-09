@@ -17,6 +17,11 @@ export default function GoogleMapsLoader () {
     scrollwheel: false,
   }
 
+  const center = {
+    lat: -3.745,
+    lng: -38.523
+  };
+
   const getLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(getPosition)
@@ -31,6 +36,17 @@ export default function GoogleMapsLoader () {
     return new google.maps.LatLng(lat, lng)
   }
 
+  const getCurrentLocation = () => {
+    if (!navigator || !navigator.geolocation) {
+      return { lat: 0, lng: 0 }
+    }
+
+    var lat, lng
+    navigator.geolocation.getCurrentPosition(position => {
+
+    })
+  }
+
   if (!isLoaded) {
     return <p className="text-slate-600">Loading Google Maps...</p>
   }
@@ -39,7 +55,7 @@ export default function GoogleMapsLoader () {
     <div className="p-4 border-2 border-dashed border-slate-600">
       { isLoaded && <GoogleMap
         options={mapOptions}
-        center={getPosition}
+        center={center}
         zoom={14}
         mapTypeId={google.maps.MapTypeId.ROADMAP}
         mapContainerStyle={{ width: '800px', height: '800px' }}
