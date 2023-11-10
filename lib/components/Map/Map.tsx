@@ -1,34 +1,30 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { GoogleMap, Marker, Circle, useJsApiLoader } from '@react-google-maps/api';
 
 const containerStyle = {
   width: 'auto',
-  height: '500px'
+  height: '700px'
 };
 
-const center = {
-  lat: 33.4357,
-  lng: -94.0672
-};
+function Map() {
+  const [origin, setOrigin] = useState({
+    lat: 33.41484510340149,
+    lng: -94.12117516209182
+  })
+  
+  const [testLocation, setTestLocation] = useState({
+    lat: 33.41484540248437,
+    lng: -94.1211762177368
+  })
+  const [tenMilesToMeters] = useState(16093.4)
+  const [map, setMap] = React.useState(null)
 
-const testLocation = {
-  lat: 33.480816,
-  lng: -94.071277
-}
-
-function MyComponent() {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.GOOGLE_MAPS_CLIENT
   })
 
-  const [map, setMap] = React.useState(null)
-
   const onLoad = React.useCallback(function callback(map) {
-    // This is just an example of getting and using the map instance!!! don't just blindly copy!
-    const bounds = new window.google.maps.LatLngBounds(center);
-    map.fitBounds(bounds);
-
     setMap(map)
   }, [])
 
@@ -36,24 +32,56 @@ function MyComponent() {
     setMap(null)
   }, [])
 
+  const updateMarker = (e) => {
+    setTestLocation({
+      lat: e.latLng.lat(),
+      lng: e.latLng.lng()
+    })
+  }
+
   return isLoaded ? (
       <GoogleMap
         mapContainerStyle={containerStyle}
-        center={center}
+        center={testLocation}
         zoom={10}
         onLoad={onLoad}
         onUnmount={onUnmount}
       >
         { /* Child components, such as markers, info windows, etc. */ }
         <>
-          <Marker position={testLocation} />
+          <Marker position={origin} />
+          <Marker position={testLocation} draggable onDragEnd={(e) => updateMarker(e)} />
+
           <Circle options={{
-            fillColor: 'blue',
-            strokeColor: 'red'
-          }} center={testLocation} radius={1000} onClick={() => alert('You clicked me!')} />
+              fillColor: 'red',
+              strokeColor: 'red',
+              fillOpacity: 0.18
+            }} 
+            center={testLocation} 
+            radius={tenMilesToMeters*2} 
+            onClick={(e) => {
+              alert(`You clicked RED at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
+            }} 
+          />
+
+          <Circle options={{
+              fillColor: 'blue',
+              strokeColor: 'blue',
+              fillOpacity: 0.18
+            }} 
+            center={testLocation} 
+            radius={tenMilesToMeters} 
+            onClick={(e) => {
+              alert(`You clicked BLUE at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
+            }} 
+          />
+
+
+
+
         </>
       </GoogleMap>
   ) : <></>
 }
 
-export default React.memo(MyComponent)
+export default React.memo(Map)
