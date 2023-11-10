@@ -1,32 +1,48 @@
-import { useState } from 'react'
-import { GoogleMap, useLoadScript } from "@react-google-maps/api"
-import Spinner from "../Spinner/Spinner"
+import React from 'react'
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
-export default function Map () {
+const containerStyle = {
+  width: 'auto',
+  height: '500px'
+};
 
-  const { isLoaded } = useLoadScript({
+const center = {
+  lat: 33.4357,
+  lng: -94.0672
+};
+
+function MyComponent() {
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
     googleMapsApiKey: process.env.GOOGLE_MAPS_CLIENT
   })
 
-  if (!isLoaded) return <div>
-    <Spinner />
-  </div>
+  const [map, setMap] = React.useState(null)
 
-  const center = {
-    lat: 0,
-    lng: 0
-  }
+  const onLoad = React.useCallback(function callback(map) {
+    // This is just an example of getting and using the map instance!!! don't just blindly copy!
+    const bounds = new window.google.maps.LatLngBounds(center);
+    map.fitBounds(bounds);
 
-  const center2 = new google.maps.LatLng(20.68177501, -103.3514794)
+    setMap(map)
+  }, [])
 
-  return (
-    <div className="flex flex-col items-center justify-center gap-20">
-      <GoogleMap 
-        zoom={5} 
-        center={center2}
-        mapContainerClassName="map" 
-        mapContainerStyle={{ width: '80%', height: '600px', margin: 'auto' }}
-      />
-    </div>
-  )
+  const onUnmount = React.useCallback(function callback(map) {
+    setMap(null)
+  }, [])
+
+  return isLoaded ? (
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={10}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+      >
+        { /* Child components, such as markers, info windows, etc. */ }
+        <></>
+      </GoogleMap>
+  ) : <></>
 }
+
+export default React.memo(MyComponent)
