@@ -1,5 +1,5 @@
 import React from 'react'
-import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, Circle, useJsApiLoader } from '@react-google-maps/api';
 
 const containerStyle = {
   width: 'auto',
@@ -10,6 +10,11 @@ const center = {
   lat: 33.4357,
   lng: -94.0672
 };
+
+const testLocation = {
+  lat: 33.480816,
+  lng: -94.071277
+}
 
 function MyComponent() {
   const { isLoaded } = useJsApiLoader({
@@ -40,7 +45,13 @@ function MyComponent() {
         onUnmount={onUnmount}
       >
         { /* Child components, such as markers, info windows, etc. */ }
-        <></>
+        <>
+          <Marker position={testLocation} />
+          <Circle options={{
+            fillColor: 'blue',
+            strokeColor: 'red'
+          }} center={testLocation} radius={1000} onClick={() => alert('You clicked me!')} />
+        </>
       </GoogleMap>
   ) : <></>
 }
