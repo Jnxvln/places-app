@@ -1,13 +1,13 @@
 "use client";
 import Header from "@/lib/components/ui/Header/Header";
 import TestApi from '@/lib/components/Sandbox/TestApi';
-import GoogleMapsLoader from "@/lib/components/GoogleMapsLoader/GoogleMapsLoader";
+import Map from "@/lib/components/Map/Map";
 
 export default function Sandbox () {
   return (
     <section>
       <Header title="Sandbox" />
-      <GoogleMapsLoader />
+      <Map />
       <TestApi />
     </section>
   )
