@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { GoogleMap, Marker, Circle, useJsApiLoader } from '@react-google-maps/api';
+import { TPlace } from '@/lib/AppTypes';
 
 const containerStyle = {
   width: 'auto',
   height: '700px'
 };
 
-function Map() {
+function Map({ places, onPreviewPlace }: { places?: any, onPreviewPlace?: Function }) {
   const [origin, setOrigin] = useState({
     lat: 33.41484510340149,
     lng: -94.12117516209182
@@ -18,6 +19,7 @@ function Map() {
   })
   const [tenMilesToMeters] = useState(16093.4)
   const [map, setMap] = React.useState(null)
+  const [hoveredPlace, setHoveredPlace] = useState<TPlace | undefined>(undefined)
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -39,6 +41,19 @@ function Map() {
     })
   }
 
+  useEffect(() => {
+    if (places && places.length > 0) {
+      console.log('[Map useEffect] Places received: ')
+      console.log(places)
+    }
+  }, [places])
+
+  useEffect(() => {
+    if (onPreviewPlace !== null && onPreviewPlace !== undefined && hoveredPlace) {
+      onPreviewPlace(hoveredPlace)
+    }
+  }, [hoveredPlace, onPreviewPlace])
+
   return isLoaded ? (
       <GoogleMap
         mapContainerStyle={containerStyle}
@@ -49,8 +64,20 @@ function Map() {
       >
         { /* Child components, such as markers, info windows, etc. */ }
         <>
-          <Marker position={origin} />
-          <Marker position={testLocation} draggable onDragEnd={(e) => updateMarker(e)} />
+          {/* <Marker position={origin} />
+          <Marker position={testLocation} draggable onDragEnd={(e) => updateMarker(e)} /> */}
+
+          { places && places.length > 0 && places.map((place: TPlace) => (
+            <Marker
+              key={place.id}
+              position={{
+                lat: place.location.latitude,
+                lng: place.location.longitude
+              }}
+              title={place.displayName.text}
+              onMouseOver={() => setHoveredPlace(place)}
+            />
+          )) }
 
           <Circle options={{
               fillColor: 'red',

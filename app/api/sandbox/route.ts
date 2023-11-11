@@ -1,33 +1,49 @@
-import { NextApiRequest } from "next";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET (request: NextApiRequest) {
-  console.log('GET REQUEST!')
-  return NextResponse.json({ status: "success", message: "GET request hello"})
-}
+const PLACES_API_ENDPOINT = `https://places.googleapis.com/v1/places:searchText`
 
-export async function POST (request: NextApiRequest) {
-  const API_URL = 'https://places.googleapis.com/v1/places:searchText'
+export async function POST (req: NextRequest, res: NextResponse) {
 
-  console.log('\n\nSANDBOX API POST REQUEST')
-  console.log('API KEY: ' + process.env.GOOGLE_MAPS_API_KEY)
+  console.log('\n\n[Server] Parsing query data...')
 
-  const result = await fetch(API_URL, {
+  // Parse search query
+  const formData = await req.formData()
+  const query = formData.get('query')
+  
+  // Handle missing query
+  if (!query || query.toString().length <= 0) {
+    return NextResponse.json({
+      status: "error",
+      message: "A search query must be provided"
+    }, { status: 400 })
+  }
+
+  console.log('\n\n[Server] Query processed. Sending request to Google API...')
+
+  // Perform API actions
+  const resp = await fetch(PLACES_API_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': process.env.GOOGLE_MAPS_API_KEY,
-      'X-Goog-FieldMask': 'places.displayName, places.formattedAddress, places.priceLevel'
+      'X-Goog-FieldMask': 'places.id,places.displayName,places.location,places.rating,places.userRatingCount,places.formattedAddress'
     },
-    body: JSON.stringify({ textQuery: "Popeye's Chicken Texarkana" })
+    body: JSON.stringify({
+      textQuery: query,
+      languageCode: 'en'
+    })
   })
 
-  const data = await result.json()
+  const data = await resp.json()
 
-  console.log('RESULT FROM GOOGLE: ')
+  console.log('\n\n[Server] Request completed. Results from Google API: ')
   console.log(data)
 
-  if (!data) return NextResponse.json({ status: 'error', error: 'No response from server' }, { status: 500 })
-
-  return NextResponse.json({ status: "success", data })
+  console.log('\n\n[Server] Returning data to client...')
+  
+  return NextResponse.json({
+    status: "success",
+    query,
+    data
+  }, { status: 200 })
 }
