@@ -3,9 +3,6 @@ import { NextRequest, NextResponse } from "next/server"
 const PLACES_API_ENDPOINT = `https://places.googleapis.com/v1/places:searchText`
 
 export async function POST (req: NextRequest, res: NextResponse) {
-
-  console.log('\n\n[Server] Parsing query data...')
-
   // Parse search query
   const formData = await req.formData()
   const query = formData.get('query')
@@ -17,8 +14,6 @@ export async function POST (req: NextRequest, res: NextResponse) {
       message: "A search query must be provided"
     }, { status: 400 })
   }
-
-  console.log('\n\n[Server] Query processed. Sending request to Google API...')
 
   // Perform API actions
   const resp = await fetch(PLACES_API_ENDPOINT, {
@@ -34,13 +29,9 @@ export async function POST (req: NextRequest, res: NextResponse) {
     })
   })
 
+  // Parse and return data to user
   const data = await resp.json()
 
-  console.log('\n\n[Server] Request completed. Results from Google API: ')
-  console.log(data)
-
-  console.log('\n\n[Server] Returning data to client...')
-  
   return NextResponse.json({
     status: "success",
     query,

@@ -18,6 +18,7 @@ export default function MapSearch ({ onRenderPlaces }: { onRenderPlaces?: Functi
       body: formData
     })
 
+    // Set places data from search results
     const result = await resp.json()
     setPlaces(result.data.places)
   }

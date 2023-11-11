@@ -7,20 +7,18 @@ import { TPlace } from "@/lib/AppTypes";
 import PlacePreview from "@/lib/components/PlacePreview/PlacePreview";
 
 export default function Sandbox () {
-
   const [places, setPlaces] = useState([])
   const [previewPlace, setPreviewPlace] = useState<TPlace | undefined>()
 
+  // Dynamically set places returned from search query
   const onRenderPlaces = (places: any) => {
     if (!places || places.length <= 0) return;
     setPlaces(places)
   }
 
+  // Set the previewPlace
   const onPreviewPlace = (place: TPlace) => {
     if (!place) return;
-
-    console.log('[Sandbox] Preview place: ')
-    console.log(place)
     setPreviewPlace(place)
   }
 
