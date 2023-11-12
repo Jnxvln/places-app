@@ -68,44 +68,53 @@ function Map({ places, onPreviewPlace }: { places?: any, onPreviewPlace?: Functi
           <Marker position={testLocation} draggable onDragEnd={(e) => updateMarker(e)} /> */}
 
           { places && places.length > 0 && places.map((place: TPlace) => (
-            <Marker
-              key={place.id}
-              position={{
-                lat: place.location.latitude,
-                lng: place.location.longitude
-              }}
-              title={place.displayName.text}
-              onMouseOver={() => setHoveredPlace(place)}
-            />
-          )) }
+            <>
+              <Marker
+                key={`marker-${place.id}`}
+                position={{
+                  lat: place.location.latitude,
+                  lng: place.location.longitude
+                }}
+                title={place.displayName.text}
+                onMouseOver={() => setHoveredPlace(place)}
+              />
 
-          <Circle options={{
-              fillColor: 'red',
-              strokeColor: 'red',
-              fillOpacity: 0.18
-            }} 
-            center={testLocation} 
-            radius={tenMilesToMeters*2} 
-            onClick={(e) => {
-              alert(`You clicked RED at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
-            }} 
-          />
+              <Circle 
+                key={`circleA-${place.id}`} 
+                options={{
+                  fillColor: 'red',
+                  strokeColor: 'red',
+                  fillOpacity: 0.18
+                }} 
+                center={{
+                  lat: place.location.latitude as number,
+                  lng: place.location.longitude as number
+                }} 
+                radius={tenMilesToMeters*2} 
+                onClick={(e) => {
+                  alert(`You clicked RED at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
+                }} 
+              />
 
-          <Circle options={{
-              fillColor: 'blue',
-              strokeColor: 'blue',
-              fillOpacity: 0.18
-            }} 
-            center={testLocation} 
-            radius={tenMilesToMeters} 
-            onClick={(e) => {
-              alert(`You clicked BLUE at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
-            }} 
-          />
-
-
-
-
+              <Circle 
+                key={`circleB-${place.id}`} 
+                options={{
+                  fillColor: 'blue',
+                  strokeColor: 'blue',
+                  fillOpacity: 0.18
+                }} 
+                center={{
+                  lat: place.location.latitude as number,
+                  lng: place.location.longitude as number
+                }}  
+                radius={tenMilesToMeters} 
+                onClick={(e) => {
+                  alert(`You clicked BLUE at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
+                }} 
+              />
+            </>
+            )) 
+          }
         </>
       </GoogleMap>
   ) : <></>

@@ -1,46 +1,98 @@
-import { FormEvent, useState, useEffect } from "react"
+import { useState, useEffect } from "react"
+import PlacesAutocomplete from 'react-google-places-autocomplete'
+import { TMapSearchResult, TSelectedMapSearchResult } from "@/lib/AppTypes";
 
-const formControlStyle = `flex items-center border border-dashed border-slate-600 p-2 w-full`
-const submitButtonStyle = `text-white rounded-md border-none px-4 py-2 font-bold text-center bg-amber-700 hover:bg-amber-800 active:bg-amber-700 transition-colors duration-100 ease-in-out`
+const PLACEID_ENDPOINT = `https://places.googleapis.com/v1/places`
 
 export default function MapSearch ({ onRenderPlaces }: { onRenderPlaces?: Function }) {
+  const [value, setValue] = useState(null)
 
-  const [query, setQuery] = useState("")
-  const [places, setPlaces] = useState([])
+  // Hides a warning hindering the API (temporary until fixed upstream) ------
+  // Solution: https://github.com/recharts/recharts/issues/3615
+  const error = console.error;
+  console.error = (...args: any) => {
+    if (/defaultProps/.test(args[0])) return;
+    error(...args);
+  };
+  // -------------------------------------------------------------------------
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-
-    // Submitting search query
-    const resp = await fetch('http://localhost:3000/api/sandbox', {
-      method: 'POST',
-      body: formData
-    })
-
-    // Set places data from search results
-    const result = await resp.json()
-    setPlaces(result.data.places)
+  const onClear = () => {
+    setValue(null)
   }
 
+  const onSetLocation = () => {
+    // Send the location's place_id
+    console.log('Not implemented yet: onSetLocation')
+  }
+
+  const findPlaceById = async (placeId: string) => {
+
+    if (!placeId) return new Error("Expected a placeId")
+
+    console.log('[MapSearch findPlaceById] Searching the Places API...')
+
+    const response = await fetch(`${PLACEID_ENDPOINT}/${placeId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': process.env.GOOGLE_MAPS_CLIENT,
+        'X-Goog-FieldMask': 'id,location,displayName,formattedAddress,googleMapsUri'
+      }
+    })
+    const place = await response.json()
+
+    if (!place) return new Error("Expected response from server")
+
+    // console.log('[MapSearch findPlaceById] Search complete. Returning results: ')
+    // console.log(place)
+
+    return place
+  }
+
+  const findPlace = async (placeId: string) => {
+    const place: TSelectedMapSearchResult = await findPlaceById(placeId)
+    console.log('[MapSearch findPlace] Place found: ')
+    console.log(place)
+
+    if (!onRenderPlaces) return new Error("Expected an onRenderPlaces callback function")
+    
+    onRenderPlaces([place])
+  }
+
+  // Run findPlace() whenever query suggestion is selected
   useEffect(() => {
-    if (onRenderPlaces !== null && onRenderPlaces !== undefined && places && places.length > 0) {
-      onRenderPlaces(places)
+    if (value) {
+      console.log('[MapSearch useEffect] Value: ')
+      const result: TMapSearchResult = value
+      console.log(result)
+
+      const placeId = result.value?.place_id
+      findPlace(placeId)
     }
-  }, [places, onRenderPlaces])
+  }, [value])
 
   return (
     <section className="bg-slate-800">
-      <form onSubmit={onSubmit} method="post" className="flex p-2">
-        <div className={formControlStyle}>
-          <label htmlFor="query" className="mr-2 font-bold text-white">Search: </label>
-          <input id="query" type="text" name="query" onChange={(e) => setQuery(e.target.value)} className="p-2 w-full border border-solid border-slate-400 rounded-md" />
+      <div className="flex flex-wrap items-center justify-start w-full">
+        
+        <div className="w-full max-w-4xl p-6">
+          <PlacesAutocomplete 
+            apiKey={process.env.GOOGLE_MAPS_CLIENT} 
+            selectProps={{ 
+              value, 
+              onChange: setValue, 
+              instanceId: `maps-${value}`
+            }} 
+            onLoadFailed={(err) => (
+              console.error("Could not inject Google Script", err)
+            )} 
+          />
         </div>
 
-        <div className={formControlStyle}>
-          <button type="submit" className={submitButtonStyle}>Search</button>
+        <div className="flex lg:mb-0 md:mx-2 max-w-4xl mb-6">
+          <button onClick={onClear} className="px-4 py-2 rounded-md text-center text-white bg-gray-600 hover:bg-red-800 transition-colors duration-150 ease-in-out">Clear</button>
         </div>
-      </form>
+      </div>
     </section>
   )
 }
