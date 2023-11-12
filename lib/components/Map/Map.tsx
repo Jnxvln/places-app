@@ -12,11 +12,6 @@ function Map({ places, onPreviewPlace }: { places?: any, onPreviewPlace?: Functi
     lat: 33.41484510340149,
     lng: -94.12117516209182
   })
-  
-  const [testLocation, setTestLocation] = useState({
-    lat: 33.41484540248437,
-    lng: -94.1211762177368
-  })
   const [tenMilesToMeters] = useState(16093.4)
   const [map, setMap] = React.useState(null)
   const [hoveredPlace, setHoveredPlace] = useState<TPlace | undefined>(undefined)
@@ -34,51 +29,42 @@ function Map({ places, onPreviewPlace }: { places?: any, onPreviewPlace?: Functi
     setMap(null)
   }, [])
 
-  const updateMarker = (e) => {
-    setTestLocation({
-      lat: e.latLng.lat(),
-      lng: e.latLng.lng()
-    })
-  }
-
-  useEffect(() => {
-    if (places && places.length > 0) {
-      console.log('[Map useEffect] Places received: ')
-      console.log(places)
-    }
-  }, [places])
-
   useEffect(() => {
     if (onPreviewPlace !== null && onPreviewPlace !== undefined && hoveredPlace) {
       onPreviewPlace(hoveredPlace)
     }
   }, [hoveredPlace, onPreviewPlace])
 
+  useEffect(() => {
+    if (onPreviewPlace !== null && onPreviewPlace !== undefined && places && places.length === 1) {
+      onPreviewPlace(places[0])
+    }
+  })
+
   return isLoaded ? (
       <GoogleMap
         mapContainerStyle={containerStyle}
-        center={testLocation}
+        center={origin}
         zoom={10}
         onLoad={onLoad}
         onUnmount={onUnmount}
       >
         { /* Child components, such as markers, info windows, etc. */ }
-        <>
-          {/* <Marker position={origin} />
-          <Marker position={testLocation} draggable onDragEnd={(e) => updateMarker(e)} /> */}
-
-          { places && places.length > 0 && places.map((place: TPlace) => (
-            <>
+        <div>
+          { places && places.length > 0 && places.map((place: TPlace, index: number) => (
+            <div key={index}>
+              {/* Marker */}
               <Marker
                 key={`marker-${place.id}`}
                 position={{
-                  lat: place.location.latitude,
-                  lng: place.location.longitude
+                  lat: place.location.latitude as number,
+                  lng: place.location.longitude as number
                 }}
                 title={place.displayName.text}
                 onMouseOver={() => setHoveredPlace(place)}
               />
 
+              {/* Red Circle */}
               <Circle 
                 key={`circleA-${place.id}`} 
                 options={{
@@ -96,6 +82,7 @@ function Map({ places, onPreviewPlace }: { places?: any, onPreviewPlace?: Functi
                 }} 
               />
 
+              {/* Blue Circle */}
               <Circle 
                 key={`circleB-${place.id}`} 
                 options={{
@@ -112,10 +99,10 @@ function Map({ places, onPreviewPlace }: { places?: any, onPreviewPlace?: Functi
                   alert(`You clicked BLUE at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
                 }} 
               />
-            </>
+            </div>
             )) 
           }
-        </>
+        </div>
       </GoogleMap>
   ) : <></>
 }

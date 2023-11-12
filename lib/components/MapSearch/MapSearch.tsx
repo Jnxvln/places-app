@@ -20,16 +20,8 @@ export default function MapSearch ({ onRenderPlaces }: { onRenderPlaces?: Functi
     setValue(null)
   }
 
-  const onSetLocation = () => {
-    // Send the location's place_id
-    console.log('Not implemented yet: onSetLocation')
-  }
-
   const findPlaceById = async (placeId: string) => {
-
     if (!placeId) return new Error("Expected a placeId")
-
-    console.log('[MapSearch findPlaceById] Searching the Places API...')
 
     const response = await fetch(`${PLACEID_ENDPOINT}/${placeId}`, {
       method: 'GET',
@@ -39,20 +31,14 @@ export default function MapSearch ({ onRenderPlaces }: { onRenderPlaces?: Functi
         'X-Goog-FieldMask': 'id,location,displayName,formattedAddress,googleMapsUri'
       }
     })
+
     const place = await response.json()
-
     if (!place) return new Error("Expected response from server")
-
-    // console.log('[MapSearch findPlaceById] Search complete. Returning results: ')
-    // console.log(place)
-
     return place
   }
 
   const findPlace = async (placeId: string) => {
     const place: TSelectedMapSearchResult = await findPlaceById(placeId)
-    console.log('[MapSearch findPlace] Place found: ')
-    console.log(place)
 
     if (!onRenderPlaces) return new Error("Expected an onRenderPlaces callback function")
     
