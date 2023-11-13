@@ -13,22 +13,25 @@ export default function Sandbox () {
   const [radius, setRadius] = useState<number>(MILES_TO_METERS)
   const [previewPlace, setPreviewPlace] = useState<TPlace | undefined>()
 
-
-  // Dynamically set places returned from search query
+  // Render places to the map
   const onRenderPlaces = (places: any) => {
-    if (!places || places.length <= 0) return;
+    // Clear the preview if no places passed
+    if (places.length === 0) {
+      setPreviewPlace(undefined)
+    }
+
     setPlaces(places)
   }
 
-  // Set the previewPlace
-  const onPreviewPlace = (place: TPlace) => {
+  // Display place information (rendered below map)
+  const onPreviewPlace = (place: TPlace | undefined) => {
     if (!place) return;
     setPreviewPlace(place)
   }
 
+  // Update map radius (from slider in MapSearch.tsx)
   const onUpdateRadius = (newRadius: number) => {    
     setRadius(parseFloat(newRadius.toString()) * MILES_TO_METERS)
-    console.log('[Sandbox.tsx onUpdateRadius()] New radius: ' + radius)
   }
 
   return (

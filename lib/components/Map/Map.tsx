@@ -4,7 +4,7 @@ import { TPlace } from '@/lib/AppTypes';
 
 const containerStyle = {
   width: 'auto',
-  height: '700px'
+  height: '500px'
 };
 
 const MILES_TO_METERS: number = 1609.34
@@ -66,32 +66,14 @@ function Map({ places, onPreviewPlace, radius }: { places?: any, onPreviewPlace?
                 onMouseOver={() => setHoveredPlace(place)}
               />
 
-              {radius && radius > 0 && <div>                
-                {/* Red Circle */}
-                <Circle 
-                  key={`circleA-${place.id}`} 
-                  options={{
-                    fillColor: 'red',
-                    strokeColor: 'red',
-                    fillOpacity: 0.18
-                  }} 
-                  center={{
-                    lat: place.location.latitude as number,
-                    lng: place.location.longitude as number
-                  }} 
-                  radius={radius ? radius*2 : MILES_TO_METERS} 
-                  onClick={(e) => {
-                    alert(`You clicked RED at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
-                  }} 
-                />
-
+              {radius && radius > 0 && <div>
                 {/* Blue Circle */}
                 <Circle 
                   key={`circleB-${place.id}`} 
                   options={{
                     fillColor: 'blue',
                     strokeColor: 'blue',
-                    fillOpacity: 0.18
+                    fillOpacity: 0.18,
                   }} 
                   center={{
                     lat: place.location.latitude as number,
