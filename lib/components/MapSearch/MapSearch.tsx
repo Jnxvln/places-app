@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react"
 import PlacesAutocomplete from 'react-google-places-autocomplete'
 import { TMapSearchResult, TSelectedMapSearchResult } from "@/lib/AppTypes";
+import { findPlaceById } from "@/lib/controllers/findPlaceById";
 
-const PLACEID_ENDPOINT = `https://places.googleapis.com/v1/places`
-
-export default function MapSearch ({ onRenderPlaces }: { onRenderPlaces?: Function }) {
+export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRenderPlaces?: Function, onUpdateRadius?: Function }) {
   const [value, setValue] = useState(null)
+  const [radius, setRadius] = useState(5)
 
-  // Hides a warning hindering the API (temporary until fixed upstream) ------
+  // 11/11/23: Hides a warning hindering the API (temporary until fixed upstream) ------
   // Solution: https://github.com/recharts/recharts/issues/3615
   const error = console.error;
   console.error = (...args: any) => {
@@ -20,29 +20,22 @@ export default function MapSearch ({ onRenderPlaces }: { onRenderPlaces?: Functi
     setValue(null)
   }
 
-  const findPlaceById = async (placeId: string) => {
-    if (!placeId) return new Error("Expected a placeId")
-
-    const response = await fetch(`${PLACEID_ENDPOINT}/${placeId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': process.env.GOOGLE_MAPS_CLIENT,
-        'X-Goog-FieldMask': 'id,location,displayName,formattedAddress,googleMapsUri'
-      }
-    })
-
-    const place = await response.json()
-    if (!place) return new Error("Expected response from server")
-    return place
-  }
-
   const findPlace = async (placeId: string) => {
     const place: TSelectedMapSearchResult = await findPlaceById(placeId)
 
     if (!onRenderPlaces) return new Error("Expected an onRenderPlaces callback function")
     
     onRenderPlaces([place])
+  }
+
+  const onChangeRadius = (e) => {
+    if (!e?.target?.value) return;
+
+    setRadius(e.target.value)
+
+    if (!onUpdateRadius || onUpdateRadius !== null) {
+      onUpdateRadius(e.target.value)
+    }
   }
 
   // Run findPlace() whenever query suggestion is selected
@@ -77,6 +70,11 @@ export default function MapSearch ({ onRenderPlaces }: { onRenderPlaces?: Functi
 
         <div className="flex lg:mb-0 md:mx-2 max-w-4xl mb-6">
           <button onClick={onClear} className="px-4 py-2 rounded-md text-center text-white bg-gray-600 hover:bg-red-800 transition-colors duration-150 ease-in-out">Clear</button>
+        </div>
+
+        <div className="flex flex-col ml-2">
+          <label htmlFor="inputRadius" className="text-white">Radius: </label>
+          <input id="inputRadius" type="range" name="radius" value={radius} onChange={onChangeRadius} step={5} min={0} max={100} />
         </div>
       </div>
     </section>
