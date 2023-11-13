@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, FormEvent, ChangeEvent } from "react"
 import PlacesAutocomplete from 'react-google-places-autocomplete'
 import { TMapSearchResult, TSelectedMapSearchResult } from "@/lib/AppTypes";
 import { findPlaceById } from "@/lib/controllers/findPlaceById";
 
+const MILES_TO_METERS: number = 1609.34
+
 export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRenderPlaces?: Function, onUpdateRadius?: Function }) {
   const [value, setValue] = useState(null)
-  const [radius, setRadius] = useState(5)
+  const [radius, setRadius] = useState<string | number>(5)
 
   // 11/11/23: Hides a warning hindering the API (temporary until fixed upstream) ------
   // Solution: https://github.com/recharts/recharts/issues/3615
@@ -28,14 +30,10 @@ export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRende
     onRenderPlaces([place])
   }
 
-  const onChangeRadius = (e) => {
-    if (!e?.target?.value) return;
-
+  const onChangeRadius = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e?.target?.value || !onUpdateRadius || onUpdateRadius === null) return;
     setRadius(e.target.value)
-
-    if (!onUpdateRadius || onUpdateRadius !== null) {
-      onUpdateRadius(e.target.value)
-    }
+    onUpdateRadius(e.target.value)
   }
 
   // Run findPlace() whenever query suggestion is selected
@@ -73,8 +71,8 @@ export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRende
         </div>
 
         <div className="flex flex-col ml-2">
-          <label htmlFor="inputRadius" className="text-white">Radius: </label>
-          <input id="inputRadius" type="range" name="radius" value={radius} onChange={onChangeRadius} step={5} min={0} max={100} />
+          <label htmlFor="inputRadius" className="text-white">Radius: {radius && radius > 0 && <span>{radius} mi</span>} </label>
+          <input disabled={!value} id="inputRadius" type="range" name="radius" value={radius} onChange={onChangeRadius} step={1} min={1} max={100} />
         </div>
       </div>
     </section>

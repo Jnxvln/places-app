@@ -7,7 +7,9 @@ const containerStyle = {
   height: '700px'
 };
 
-function Map({ places, onPreviewPlace }: { places?: any, onPreviewPlace?: Function }) {
+const MILES_TO_METERS: number = 1609.34
+
+function Map({ places, onPreviewPlace, radius }: { places?: any, onPreviewPlace?: Function, radius?: number }) {
   const [origin, setOrigin] = useState({
     lat: 33.41484510340149,
     lng: -94.12117516209182
@@ -64,41 +66,44 @@ function Map({ places, onPreviewPlace }: { places?: any, onPreviewPlace?: Functi
                 onMouseOver={() => setHoveredPlace(place)}
               />
 
-              {/* Red Circle */}
-              <Circle 
-                key={`circleA-${place.id}`} 
-                options={{
-                  fillColor: 'red',
-                  strokeColor: 'red',
-                  fillOpacity: 0.18
-                }} 
-                center={{
-                  lat: place.location.latitude as number,
-                  lng: place.location.longitude as number
-                }} 
-                radius={tenMilesToMeters*2} 
-                onClick={(e) => {
-                  alert(`You clicked RED at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
-                }} 
-              />
+              {radius && radius > 0 && <div>                
+                {/* Red Circle */}
+                <Circle 
+                  key={`circleA-${place.id}`} 
+                  options={{
+                    fillColor: 'red',
+                    strokeColor: 'red',
+                    fillOpacity: 0.18
+                  }} 
+                  center={{
+                    lat: place.location.latitude as number,
+                    lng: place.location.longitude as number
+                  }} 
+                  radius={radius ? radius*2 : MILES_TO_METERS} 
+                  onClick={(e) => {
+                    alert(`You clicked RED at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
+                  }} 
+                />
 
-              {/* Blue Circle */}
-              <Circle 
-                key={`circleB-${place.id}`} 
-                options={{
-                  fillColor: 'blue',
-                  strokeColor: 'blue',
-                  fillOpacity: 0.18
-                }} 
-                center={{
-                  lat: place.location.latitude as number,
-                  lng: place.location.longitude as number
-                }}  
-                radius={tenMilesToMeters} 
-                onClick={(e) => {
-                  alert(`You clicked BLUE at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
-                }} 
-              />
+                {/* Blue Circle */}
+                <Circle 
+                  key={`circleB-${place.id}`} 
+                  options={{
+                    fillColor: 'blue',
+                    strokeColor: 'blue',
+                    fillOpacity: 0.18
+                  }} 
+                  center={{
+                    lat: place.location.latitude as number,
+                    lng: place.location.longitude as number
+                  }}  
+                  radius={radius ? radius : MILES_TO_METERS} 
+                  onClick={(e) => {
+                    alert(`You clicked BLUE at ${e.latLng?.lat()}, ${e.latLng?.lng()}`)
+                  }} 
+                />
+              </div>}
+
             </div>
             )) 
           }
