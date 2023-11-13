@@ -10,6 +10,7 @@ const MILES_TO_METERS: number = 1609.34
 
 export default function Sandbox () {
   const [places, setPlaces] = useState([])
+  const [keywords, setKeywords] = useState([])
   const [radius, setRadius] = useState<number>(MILES_TO_METERS)
   const [previewPlace, setPreviewPlace] = useState<TPlace | undefined>()
 
@@ -34,11 +35,17 @@ export default function Sandbox () {
     setRadius(parseFloat(newRadius.toString()) * MILES_TO_METERS)
   }
 
+  const onUpdateKeywords = (keywords: any | undefined) => {
+    setKeywords(keywords)
+    // console.log('[Sandbox.tsx onUpdateKeywords()] Keywords updated: ')
+    // console.log(keywords)
+  }
+
   return (
     <div>
       <section>
         <Header title="Sandbox" />
-        <MapSearch onRenderPlaces={onRenderPlaces} onUpdateRadius={onUpdateRadius} />
+        <MapSearch onRenderPlaces={onRenderPlaces} onUpdateRadius={onUpdateRadius} onUpdateKeywords={onUpdateKeywords} />
         <Map places={places} onPreviewPlace={onPreviewPlace} radius={radius} />
       </section>
       <section className="border border-dashed border-slate-600 p-4">

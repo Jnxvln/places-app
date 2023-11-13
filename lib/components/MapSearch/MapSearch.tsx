@@ -1,13 +1,10 @@
-import { useState, useEffect, useRef, forwardRef, ChangeEvent } from "react"
-import PlacesAutocomplete from 'react-google-places-autocomplete'
+import { useState, useEffect, useRef, ChangeEvent } from "react"
 import { TMapSearchResult, TSelectedMapSearchResult } from "@/lib/AppTypes";
 import { findPlaceById } from "@/lib/controllers/findPlaceById";
 import PlacesAutoComplete from "../PlacesAutoComplete/PlacesAutoComplete";
+import { findPlacesByKeywords } from "@/lib/controllers/findPlacesByKeywords";
 
-const MILES_TO_METERS: number = 1609.34
-
-export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRenderPlaces?: Function, onUpdateRadius?: Function }) {
-  
+export default function MapSearch ({ onRenderPlaces, onUpdateRadius, onUpdateKeywords }: { onRenderPlaces?: Function, onUpdateRadius?: Function, onUpdateKeywords?: Function }) {
   const inputKeywordsRef = useRef(null) // used to access focus()
 
   const [value, setValue] = useState<string | undefined | null>(null)
@@ -33,6 +30,11 @@ export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRende
   const onClearKeywords = () => {
     setKeywords("")
 
+    // Clear keywords
+    if (onUpdateKeywords !== undefined) {
+      onUpdateKeywords(undefined)
+    }
+
     // Set focus back on input
     if (inputKeywordsRef && inputKeywordsRef.current) {
       (inputKeywordsRef.current as HTMLInputElement).focus()
@@ -47,10 +49,30 @@ export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRende
     onRenderPlaces([place])
   }
 
+  const findPlaces = async (query: string) => {
+    console.log('[MapSearch findPlaces()] Searching for places...')
+    const places = await findPlacesByKeywords(query)
+
+    console.log('[MapSearch findPlaces()] Places found: ')
+    console.log(places)
+  }
+
   const onChangeRadius = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e?.target?.value || !onUpdateRadius || onUpdateRadius === null) return;
     setRadius(e.target.value)
     onUpdateRadius(e.target.value)
+  }
+
+  function debounceKeywordSearch (func: any, timeout = 3000) {
+    console.log('[MapSearch debounceKeywordSearch()] Running debounce keyword search...')
+    let timer: NodeJS.Timeout;
+
+    return (...args: any[]) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        func.apply(this, args);
+      }, timeout)
+    }
   }
 
   // Run findPlace() whenever query suggestion is selected
@@ -62,10 +84,19 @@ export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRende
     }
   }, [value])
 
+  useEffect(() => {
+    if (keywords && onUpdateKeywords !== undefined) {
+      onUpdateKeywords(keywords)
+      // debounceKeywordSearch(findPlaces(keywords))
+      debounceKeywordSearch(() => findPlaces(keywords))
+    }
+  }, [keywords, onUpdateKeywords])
+
   return (
     <section className="bg-slate-800 p-4">
       <div className="flex flex-wrap gap-2 w-full">
         
+        {/* PlacesAutoComplete component */}
         <div className="w-full flex flex-col">
           <label className="text-white">Address: </label>
           <div className="flex flex-wrap">
@@ -78,6 +109,7 @@ export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRende
           </div>
         </div>
 
+        {/* Keywords Search component */}
         <div className="flex flex-col w-full">
           <label htmlFor="keywords" className="text-white mr-2">Keywords: </label>
           <div className="flex gap-3"> 
@@ -88,6 +120,7 @@ export default function MapSearch ({ onRenderPlaces, onUpdateRadius }: { onRende
           </div>
         </div>
 
+        {/* Radius control */}
         <div>
           <label htmlFor="inputRadius" className="text-white">Radius: {radius && radius > 0 && <span>{radius} mi</span>} </label>
           <input disabled={!value} id="inputRadius" type="range" name="radius" value={radius} onChange={onChangeRadius} step={1} min={1} max={100} />
